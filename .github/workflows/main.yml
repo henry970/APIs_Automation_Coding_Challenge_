@@ -17,18 +17,26 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3  # Updated to the latest version
         with:
-          node-version: '16'  # Specify the Node.js version
+          node-version: '16.x'  # Use latest Node.js patch for version 16
 
-      - name: Install Newman and HTMLExtra Reporter
-        run: |
-          npm install -g newman
-          npm install -g newman-reporter-htmlextra  # Ensure htmlextra reporter is installed
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Install HTMLExtra Reporter
+        run: npm install -g newman-reporter-htmlextra
+
+      - name: Create Reports Directory
+        run: mkdir -p reports
 
       - name: Run Postman Collection
-        run: newman run Marketstack.postman_collection.json -r htmlextra --reporter-htmlextra-export ./reports/report.html
+        run: |
+          newman run ./Marketstack.postman_collection.json -r htmlextra,cli \
+            --reporter-htmlextra-export ./reports/report.html --verbose
+        shell: bash
 
       - name: Upload HTML Report
-        uses: actions/upload-artifact@v3  # Updated to the latest version
+        uses: actions/upload-artifact@v3
         with:
           name: newman-report
           path: ./reports/report.html
+          retention-days: 7  # Optional: Retain artifact for a specified duration
